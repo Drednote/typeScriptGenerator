@@ -1,0 +1,63 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.0.7'
+    id 'io.spring.dependency-management' version '1.1.0'
+    id 'cz.habarta.typescript-generator' version '3.2.1263'
+}
+
+group = 'ru.bcs.perseus'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springCloudVersion', '2022.0.1')
+}
+
+// more options https://www.habarta.cz/typescript-generator/maven/typescript-generator-maven-plugin/generate-mojo.html
+generateTypeScript {
+    jsonLibrary = 'jackson2'
+    optionalAnnotations = [
+            'javax.annotation.Nullable',
+            'jakarta.annotation.Nullable',
+            'org.springframework.lang.Nullable'
+    ]
+    classPatterns = [
+            'ru.bcs.perseus.publishapi.api.dto.**',
+    ]
+    outputKind = 'ambientModule'
+    module = 'example-module'
+    outputFile = "build/typeScript/${rootProject.name}.d.ts"
+    mapMap = 'asRecord'
+}
+
+build { dependsOn generateTypeScript }
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation "org.springframework.cloud:spring-cloud-starter-openfeign"
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
